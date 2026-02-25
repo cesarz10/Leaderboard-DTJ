@@ -1,4 +1,5 @@
 .leaderboard-container {
+  position: relative;
   max-width: 600px;
   margin: 2rem auto;
   padding: 2rem;
@@ -6,6 +7,28 @@
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.language-selector {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 0.9rem;
+  color: #888;
+  font-weight: bold;
+}
+
+.language-selector span {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.language-selector span:hover {
+  color: #333;
+}
+
+.active-lang {
+  color: #007bff; /* Highlights the currently selected language in blue */
 }
 
 .leaderboard-container h2 {
@@ -88,4 +111,11 @@
   text-align: center;
   padding: 2rem;
   color: #888;
+}
+
+.leaderboard-logo {
+  display: block;        /* Makes the image a block element so margins work */
+  margin: 0 auto 1rem;   /* 0 top, auto sides (centers it), 1rem bottom spacing */
+  max-width: 150px;      /* Adjust this number to make your logo bigger or smaller! */
+  height: auto;          /* Keeps the image proportions correct */
 }

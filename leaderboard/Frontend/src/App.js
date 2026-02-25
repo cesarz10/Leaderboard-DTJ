@@ -1,101 +1,153 @@
 import React, { useState, useEffect } from 'react';
-import { getScores } from './Utils/api';
+import { getData, addData } from './Utils/api';
 import './Leaderboard.css';
 
+// Translations for the different languages:
+// Add this outside and above your component
+const translations = {
+  ENG: {
+    title: "🏆 High Runs of the Month",
+    playerName: "Player Name",
+    scoreText: "Score",
+    dateText: "Date (YYYY-MM-DD)",
+    addBtn: "Add Score",
+    rank: "Rank",
+    name: "Name",
+    empty: "No scores yet! Be the first!"
+  },
+  NL: {
+    title: "🏆 Hoogste runs van de maand",
+    playerName: "Spelernaam",
+    scoreText: "Score",
+    dateText: "Datum (JJJJ-MM-DD)",
+    addBtn: "Score Toevoegen",
+    rank: "Rang",
+    name: "Naam",
+    empty: "Nog geen scores! Wees de eerste!"
+  },
+  FR: {
+    title: "🏆 Meilleures performances du mois",
+    playerName: "Nom du Joueur",
+    scoreText: "Score",
+    dateText: "Date (AAAA-MM-JJ)",
+    addBtn: "Ajouter un Score",
+    rank: "Rang",
+    name: "Nom",
+    empty: "Aucun score pour le moment ! Soyez le premier !"
+  }
+};
+
+
 const Leaderboard = () => {
-  // 1. Setup initial state with some dummy data
-  // const [scores, setScores] = useState([
-  //   { id: 1, name: 'Alice', score: 9500, date: '2026-02-14' },
-  //   { id: 2, name: 'Bob', score: 8200, date: '2026-02-13' },
-  //   { id: 3, name: 'Charlie', score: 10500, date: '2026-02-12' },
-  // ]);
-  const [scores, setScores] = useState([]);
+  const [data, setData] = useState([]);
 
-  useEffect(() => {
-    getScores().then(data => {
-      setScores(JSON.parse(data));
-    });
-  }, []);
-
-  // State for the new entry form
   const [newName, setNewName] = useState('');
   const [newScore, setNewScore] = useState('');
 
+  const [lang, setLang] = useState('ENG');
+
+  // Helper variable to make the JSX cleaner
+  const t = translations[lang];
+
+  useEffect(() => {
+    getData().then(data => {
+      setData(JSON.parse(data));
+    });
+  }, []);
+
+
   // 2. Handle form submission
-  const handleAddScore = (e) => {
+  const handleAddScore = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!newName.trim() || !newScore) return;
 
-    // Create a new score object
-    const newEntry = {
-      id: Date.now(), // Generate a unique ID
-      name: newName,
-      score: parseInt(newScore, 10),
-      // Automatically generate today's date in YYYY-MM-DD format
-      date: new Date().toISOString().split('T')[0]
-    };
+    try {
+      // 2. Wait for the backend to finish adding the data
+      await addData({
+        name: newName,
+        score: parseInt(newScore, 10),
+      });
 
-    // Update the state with the new entry
-    setScores([...scores, newEntry]);
+      // 3. Clear the form inputs immediately
+      setNewName('');
+      setNewScore('');
 
-    // Clear the form
-    setNewName('');
-    setNewScore('');
+      // 4. Fetch the fresh, complete list from your backend!
+      // This guarantees the 'created_at' timestamp is accurate
+      const freshData = await getData();
+      setData(JSON.parse(freshData));
+
+    } catch (error) {
+      console.error("Failed to save the new score:", error);
+    }
   };
 
   // 3. Sort the scores in descending order before rendering
-  const sortedScores = [...scores].sort((a, b) => b.score - a.score);
+  const sortedScores = [...data].sort((a, b) => b.score - a.score);
 
   return (
     <div className="leaderboard-container">
-      <h2>🏆 High Scores</h2>
+
+      <div className="language-selector">
+        <span className={lang === 'ENG' ? 'active-lang' : ''} onClick={() => setLang('ENG')}>ENG</span> /
+        <span className={lang === 'NL' ? 'active-lang' : ''} onClick={() => setLang('NL')}> NL</span> /
+        <span className={lang === 'FR' ? 'active-lang' : ''} onClick={() => setLang('FR')}> FR</span>
+      </div>
+
+      <img src="/dtj_logo.jpg" className="leaderboard-logo" />
+      <h2>{t.title}</h2>
 
       {/* Submission Form */}
       <form onSubmit={handleAddScore} className="add-score-form">
         <input
           type="text"
-          placeholder="Player Name"
+          placeholder={t.playerName}
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           required
         />
         <input
           type="number"
-          placeholder="Score"
+          placeholder={t.scoreText}
           value={newScore}
           onChange={(e) => setNewScore(e.target.value)}
           required
         />
-        <button type="submit">Add Score</button>
+        <button type="submit">{t.addBtn}</button>
       </form>
 
       {/* Leaderboard Table */}
       <table className="leaderboard-table">
         <thead>
-          <tr>
+          {/* <tr>
             <th>Rank</th>
             <th>Name</th>
             <th>Score</th>
             <th>Date</th>
+          </tr> */}
+          <tr>
+            <th>{t.rank}</th>
+            <th>{t.name}</th>
+            <th>{t.scoreText}</th>
+            <th>{t.dateText.split(' ')[0]}</th> {/* Grabs just the word 'Date/Datum' */}
           </tr>
         </thead>
         <tbody>
           {sortedScores.map((entry, index) => (
-            <tr key={entry.id}>
+            <tr key={index}>
               <td>
                 {/* Add medals for the top 3 */}
                 {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
               </td>
               <td className="player-name">{entry.name}</td>
               <td className="player-score">{entry.score.toLocaleString()}</td>
-              <td className="player-date">{entry.date}</td>
+              <td className="player-date">{entry.created_at.substring(0, 16)}</td>
             </tr>
           ))}
           {sortedScores.length === 0 && (
             <tr>
-              <td colSpan="4" className="empty-state">No scores yet! Be the first!</td>
+              <td colSpan="4" className="empty-state">{t.empty}</td>
             </tr>
           )}
         </tbody>
