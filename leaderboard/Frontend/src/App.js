@@ -3,7 +3,6 @@ import { getData, addData } from './Utils/api';
 import './Leaderboard.css';
 
 // Translations for the different languages:
-// Add this outside and above your component
 const translations = {
   ENG: {
     title: "🏆 High Runs of the Month",
@@ -56,25 +55,24 @@ const Leaderboard = () => {
   }, []);
 
 
-  // 2. Handle form submission
+  // 2. Handle score submission
   const handleAddScore = async (e) => {
     e.preventDefault();
 
     if (!newName.trim() || !newScore) return;
 
     try {
-      // 2. Wait for the backend to finish adding the data
-      await addData({
+      await addData({ // Wait for the backend to finish adding the data
         name: newName,
         score: parseInt(newScore, 10),
       });
 
-      // 3. Clear the form inputs immediately
+      // Clear the form inputs immediately
       setNewName('');
       setNewScore('');
 
-      // 4. Fetch the fresh, complete list from your backend!
-      // This guarantees the 'created_at' timestamp is accurate
+      // Fetch the fresh, complete list from the backend
+      // guarantees the 'created_at' timestamp is accurate
       const freshData = await getData();
       setData(JSON.parse(freshData));
 
@@ -83,7 +81,7 @@ const Leaderboard = () => {
     }
   };
 
-  // 3. Sort the scores in descending order before rendering
+  // Sort the scores in descending order before rendering
   const sortedScores = [...data].sort((a, b) => b.score - a.score);
 
   return (
@@ -120,17 +118,12 @@ const Leaderboard = () => {
       {/* Leaderboard Table */}
       <table className="leaderboard-table">
         <thead>
-          {/* <tr>
-            <th>Rank</th>
-            <th>Name</th>
-            <th>Score</th>
-            <th>Date</th>
-          </tr> */}
           <tr>
             <th>{t.rank}</th>
             <th>{t.name}</th>
             <th>{t.scoreText}</th>
-            <th>{t.dateText.split(' ')[0]}</th> {/* Grabs just the word 'Date/Datum' */}
+            {/* Grabs just the word 'Date/Datum' */}
+            <th>{t.dateText.split(' ')[0]}</th>
           </tr>
         </thead>
         <tbody>
@@ -141,7 +134,7 @@ const Leaderboard = () => {
                 {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
               </td>
               <td className="player-name">{entry.name}</td>
-              <td className="player-score">{entry.score.toLocaleString()}</td>
+              <td className="player-score">{entry.score?.toLocaleString() ?? '0'}</td>
               <td className="player-date">{entry.created_at.substring(0, 16)}</td>
             </tr>
           ))}

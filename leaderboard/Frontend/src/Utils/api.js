@@ -10,8 +10,7 @@ export const getData = async token => {
   });
 
   const responsetxt = await userData.text(); // get the response from get_question_answer -> what is being returned from the backend
-  // console.log('\n\n\n userData inside getScores:', responsetxt);
-  console.log(`\n\n\n userData inside getData: ${responsetxt}\n\n\n`);
+  // console.log(`\n\n\n userData inside getData: ${responsetxt}\n\n\n`);
 
   return responsetxt;
 };
