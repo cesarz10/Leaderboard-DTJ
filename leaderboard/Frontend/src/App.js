@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getData, addData } from './Utils/api';
+import { getData, supabase } from './Utils/api';
 import './Leaderboard.css';
+
 
 // Translations for the different languages:
 const translations = {
@@ -55,29 +56,37 @@ const Leaderboard = () => {
   }, []);
 
 
-  // 2. Handle score submission
   const handleAddScore = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevents the page from refreshing when the form is submitted
 
-    if (!newName.trim() || !newScore) return;
+    // 1. Send the new data to Supabase
+    const { data, error } = await supabase
+      .from('user_data')
+      .insert([
+        {
+          name: newName,
+          score: Number(newScore) // Ensures the score is saved as a number, not a string
+        }
+      ])
+      .select(); // This tells Supabase to send back the row it just created
 
-    try {
-      await addData({ // Wait for the backend to finish adding the data
-        name: newName,
-        score: parseInt(newScore, 10),
-      });
+    // 2. Handle any potential errors
+    if (error) {
+      console.error("Error saving score:", error.message);
+      alert("Oops! Couldn't save the score. Check the console.");
+      return;
+    }
 
-      // Clear the form inputs immediately
+    // 3. If successful, update the UI and clear the form
+    if (data) {
+      // Clear the input fields so the next player can type
       setNewName('');
       setNewScore('');
 
-      // Fetch the fresh, complete list from the backend
-      // guarantees the 'created_at' timestamp is accurate
-      const freshData = await getData();
-      setData(JSON.parse(freshData));
-
-    } catch (error) {
-      console.error("Failed to save the new score:", error);
+      // Refreshing leaderboard here!
+      getData().then(data => {
+        setData(JSON.parse(data));
+      });
     }
   };
 

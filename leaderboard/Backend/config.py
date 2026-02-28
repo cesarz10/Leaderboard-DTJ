@@ -4,33 +4,16 @@ from urllib.parse import quote
 
 
 class Config:
-    # # From environment variables "secure way"
-    # SECRET_KEY = os.getenv('SECRET_KEY')
-    # DATABASE_USERNAME = quote(os.getenv('DATABASE_USERNAME'), safe='')
-    # DATABASE_PASSWORD = quote(os.getenv('DATABASE_PASSWORD'), safe='')
-    # DATABASE_URL = os.getenv('DATABASE_URL')
-    # DATABASE_NAME = quote(os.getenv('DATABASE_NAME'))
-    # SQLALCHEMY_DATABASE_URI = f"postgresql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_URL}/{DATABASE_NAME}"
-    # REDIS_IP = os.getenv("REDIS_IP")
-    # REDIS_PORT = os.getenv("REDIS_PORT")
-    # REDIS_USERNAME = os.getenv('REDIS_USERNAME')
-    # REDIS_PASSWORD = os.getenv('REDIS_PASSWORD')
-    # RATELIMIT_STORAGE_URL = f"redis://{quote(REDIS_USERNAME, safe='')}:{quote(REDIS_PASSWORD, safe='')}@{REDIS_IP}:{REDIS_PORT}"
-
     # SECRET_KEY = "test"
     DATABASE_USERNAME = "postgres"
     DATABASE_PASSWORD = "cesarz10"
     # DATABASE_URL = "193.190.127.172" # right now it's localhost
-    DATABASE_URL = "localhost:5432"
-    DATABASE_NAME = "leaderboardDTJ"
+    DATABASE_URL = "db.pdbjxdlvaqfojdqgtqbr.supabase.co:5432" # this is the URL for the database on Supabase
+    # DATABASE_NAME = "leaderboardDTJ"
+    DATABASE_NAME = "postgres" # this is the name of the database on Supabase
     SQLALCHEMY_DATABASE_URI = f"postgresql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_URL}/{DATABASE_NAME}"
-    # REDIS_IP = "193.190.127.172"
-    # REDIS_PORT = 6379
-    # REDIS_PORT = 5432
-    # REDIS_USERNAME = "redis_user"
-    # REDIS_PASSWORD ="testingredis123"
-    # RATELIMIT_STORAGE_URL = f"redis://{quote(REDIS_USERNAME, safe='')}:{quote(REDIS_PASSWORD, safe='')}@{REDIS_IP}:{REDIS_PORT}"
 
+    # "postgresql://postgres:[YOUR-PASSWORD]@db.pdbjxdlvaqfojdqgtqbr.supabase.co:5432/postgres"
 
     # SQLAlchemy configuration
     SQLALCHEMY_ENGINE_OPTIONS = {
