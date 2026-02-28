@@ -102,7 +102,7 @@ const Leaderboard = () => {
         <span className={lang === 'FR' ? 'active-lang' : ''} onClick={() => setLang('FR')}> FR</span>
       </div>
 
-      <img src="/dtj_logo.jpg" className="leaderboard-logo" />
+      <img src="/dtj_logo.jpg" alt='DTJ_logo' className="leaderboard-logo" />
       <h2>{t.title}</h2>
 
       {/* Submission Form */}
