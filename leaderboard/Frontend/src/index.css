@@ -11,3 +11,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 600px) {
+  /* 1. Center the main white card and make it fit the screen */
+  .leaderboard-container {
+    width: 90%; 
+    margin: 20px auto; /* Centers the box */
+    padding: 15px;
+    box-sizing: border-box; /* Stops padding from pushing the width too wide */
+  }
+
+  /* 2. Stack the form inputs vertically */
+  .add-score-form {
+    display: flex;
+    flex-direction: column; /* Stacks items top-to-bottom instead of left-to-right */
+    gap: 10px; /* Adds breathing room between the inputs */
+  }
+
+  /* 3. Make the inputs and button fill the new stacked space nicely */
+  .add-score-form input,
+  .add-score-form button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
