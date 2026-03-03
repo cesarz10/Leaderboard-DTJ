@@ -15,7 +15,7 @@ const translations = {
     empty: "No scores yet! Be the first!",
     rulesTitle: "Game Rules",
     rulesSummary: "14.1 Continuous (also referred to as “Straight Pool”) is a call shot game played with a cue ball and fifteen object balls numbered 1 through 15. You are allowed to pocket the first 14 balls of the rack, but before shooting the 15th ball the 14 previously pocketed balls are racked, leaving the apex space vacant. After the 14 balls have been racked, you continue to shoot by attempting to pocket the 15th ball while simultaneously breaking out some of the 14 racked balls so your run may continue.",
-    moreInfo: "More information",
+    moreInfo: "Game Rules",
     rules: "rulesEN.pdf"
   },
   NL: {
@@ -29,7 +29,7 @@ const translations = {
     empty: "Nog geen scores! Wees de eerste!",
     rulesTitle: "Spelregels",
     rulesSummary: "14.1 Continuous (ook wel “Straight Pool” genoemd) is een call shot spel gespeeld met een cue bal en vijftien object ballen genummerd van 1 tot 15. Je mag de eerste 14 ballen van de rack potten, maar voordat je de 15e bal pott worden de eerder gepotete ballen opnieuw gerackt, waardoor de apex ruimte leeg blijft. Nadat de 14 ballen opnieuw gerackt zijn, ga je verder met schieten door te proberen de 15e bal te potten terwijl je ook enkele van de 14 gerackte ballen uit het rack brengt zodat je run kan doorgaan.",
-    moreInfo: "Meer informatie",
+    moreInfo: "Spelregels",
     rules: "rulesNL.pdf"
   },
   FR: {
@@ -43,7 +43,7 @@ const translations = {
     empty: "Aucun score pour le moment ! Soyez le premier !",
     rulesTitle: "Règles du jeu",
     rulesSummary: "14.1 Continuous (également appelé “Straight Pool”) est un jeu de shot appelé joué avec une boule de queue et quinze boules objet numérotées de 1 à 15. Vous êtes autorisé à faire tomber les 14 premières boules du rack, mais avant de tirer la 15e boule, les 14 boules précédemment faites tomber sont remises en place, laissant l’espace du sommet vide. Après que les 14 boules aient été remises en place, vous continuez à tirer en essayant de faire tomber la 15e boule tout en sortant certaines des 14 boules remises en place afin que votre run puisse continuer.",
-    moreInfo: "Plus d'informations",
+    moreInfo: "Règles du jeu",
     rules: "rulesFR.pdf"
   }
 };
@@ -51,6 +51,7 @@ const translations = {
 
 const Leaderboard = () => {
   const [data, setData] = useState([]);
+  const [currentData, setCurrentData] = useState([]);
 
   const [newName, setNewName] = useState('');
   const [newScore, setNewScore] = useState('');
@@ -61,8 +62,15 @@ const Leaderboard = () => {
   const t = translations[lang];
 
   useEffect(() => {
-    getData().then(data => {
-      setData(JSON.parse(data));
+    getData().then(data => { // get only the scores from the current month
+      const parsedData = JSON.parse(data);
+      const filteredData = parsedData.filter(entry => {
+        const entryDate = new Date(entry.created_at);
+        const now = new Date();
+        return entryDate.getMonth() === now.getMonth() && entryDate.getFullYear() === now.getFullYear();
+      });
+      setCurrentData(filteredData);
+      setData(parsedData); // set all data for the leaderboard, but only show the current month's scores in the UI
     });
   }, []);
 
@@ -96,14 +104,21 @@ const Leaderboard = () => {
 
       // Refresh leaderboard
       getData().then(data => {
-        setData(JSON.parse(data));
+        const parsedData = JSON.parse(data);
+        const filteredData = parsedData.filter(entry => {
+          const entryDate = new Date(entry.created_at);
+          const now = new Date();
+          return entryDate.getMonth() === now.getMonth() && entryDate.getFullYear() === now.getFullYear();
+        });
+        setCurrentData(filteredData);
+        setData(parsedData); // set all data for the leaderboard, but only show the current month's scores in the UI
       });
     }
   };
 
   // Sort the scores in descending order before rendering
-  const sortedScores = [...data].sort((a, b) => b.score - a.score);
-
+  const sortedScores = [...currentData].sort((a, b) => b.score - a.score);
+  const uniqueNames = [...new Set(data.map(entry => entry.name))]; // names to be used for autocomplete
 
   return (
     <div className="leaderboard-container">
@@ -125,7 +140,13 @@ const Leaderboard = () => {
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
           required
+          list="player-names"
         />
+        <datalist id="player-names">
+          {uniqueNames.map((name, index) => (
+            <option key={index} value={name} />
+          ))}
+        </datalist>
         <input
           type="number"
           placeholder={t.scoreText}
@@ -181,7 +202,7 @@ const Leaderboard = () => {
           rel="noopener noreferrer"
           style={{ color: '#0056b3', textDecoration: 'underline', fontWeight: 'bold', fontSize: '13px' }}
         >
-          {t.moreInfo || "More information"}
+          {t.moreInfo || "Game Rules"}
         </a>
       </div>
 

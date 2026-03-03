@@ -10,7 +10,8 @@ export const getData = async () => {
   const { data, error } = await supabase
     .from('user_data')
     .select('*')
-    .order('score', { ascending: false }); // Optional: let Supabase sort it for you!
+    // .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()) // get only the scores from the current month
+    .order('score', { ascending: false }); // order by score in descending order
 
   if (error) {
     console.error("Error fetching data:", error);

@@ -35,7 +35,7 @@ def get_data():
         })
 
     answers_arr = jsonify(answers_arr)
-
+    print(f"BACKEND: answers_arr: {answers_arr}") # for debugging purposes
     return answers_arr, 200 # 200: OK -> everything went well
 
 
