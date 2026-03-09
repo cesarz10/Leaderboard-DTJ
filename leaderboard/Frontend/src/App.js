@@ -1,6 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getData, supabase } from './Utils/api';
 import './Leaderboard.css';
+
+
+// Helper function to format the name of the players directly when the data is fetched
+const formatName = (rawName) => {
+  if (!rawName) return "";
+  return rawName
+    .trim()                 // Remove spaces at the very beginning and end
+    .replace(/\s+/g, ' ')   // Turn accidental double/triple spaces inside the name into a single space
+    .toLowerCase()         
+    .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize the first letter of each word
+};
+
 
 // Translations for the different languages:
 const translations = {
@@ -63,7 +75,10 @@ const Leaderboard = () => {
 
   useEffect(() => {
     getData().then(data => { // get only the scores from the current month
-      const parsedData = JSON.parse(data);
+      const parsedData = JSON.parse(data).map(entry => ({
+        ...entry,
+        name: formatName(entry.name) // Format the name of the players directly when the data is fetched
+      }));
       const filteredData = parsedData.filter(entry => {
         const entryDate = new Date(entry.created_at);
         const now = new Date();
@@ -83,7 +98,7 @@ const Leaderboard = () => {
       .from('user_data')
       .insert([
         {
-          name: newName,
+          name: formatName(newName), // Format the name before saving to the database
           score: Number(newScore) // Ensures the score is saved as a number, not a string
         }
       ])
@@ -104,7 +119,10 @@ const Leaderboard = () => {
 
       // Refresh leaderboard
       getData().then(data => {
-        const parsedData = JSON.parse(data);
+        const parsedData = JSON.parse(data).map(entry => ({
+          ...entry,
+          name: formatName(entry.name)
+        }));
         const filteredData = parsedData.filter(entry => {
           const entryDate = new Date(entry.created_at);
           const now = new Date();
@@ -116,9 +134,27 @@ const Leaderboard = () => {
     }
   };
 
+
+  // Using memos: only change the sorted scores if the currentData changes, to avoid unnecessary calculations on every render
+
   // Sort the scores in descending order before rendering
-  const sortedScores = [...currentData].sort((a, b) => b.score - a.score);
-  const uniqueNames = [...new Set(data.map(entry => entry.name))]; // names to be used for autocomplete
+  const sortedScores = useMemo(() => {
+    return [...currentData].sort((a, b) => b.score - a.score);
+  }, [currentData]);
+
+  const uniqueNames = useMemo(() => {
+    return [...new Set(data.map(entry => entry.name))];
+  }, [data]);
+
+  // Group the top scores
+  const topScores = useMemo(() => {
+    const groupedMap = new Map([...sortedScores].reverse().map(item => [item.name, item]));
+    const finalScores = [...groupedMap.values()].sort((a, b) => b.score - a.score);
+    console.log("Top score per user:", finalScores);
+    return finalScores;
+  }, [sortedScores]);
+
+
 
   return (
     <div className="leaderboard-container">
@@ -169,7 +205,8 @@ const Leaderboard = () => {
           </tr>
         </thead>
         <tbody>
-          {sortedScores.map((entry, index) => (
+          {/* {sortedScores.map((entry, index) => ( */}
+          {topScores.map((entry, index) => (
             <tr key={index}>
               <td>
                 {/* Add medals for the top 3 */}
@@ -180,7 +217,8 @@ const Leaderboard = () => {
               <td className="player-date">{entry.created_at.substring(0, 16).split('T')[0]}</td>
             </tr>
           ))}
-          {sortedScores.length === 0 && (
+          {/* {sortedScores.length === 0 && ( */}
+          {topScores.length === 0 && (
             <tr>
               <td colSpan="4" className="empty-state">{t.empty}</td>
             </tr>
